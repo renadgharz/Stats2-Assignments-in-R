@@ -7,7 +7,7 @@ library(dplyr)
 #Loading data
 realestate <- read_xlsx("./Assign1/Assign1Data.xlsx")
 
-#1.1a
+#1.1.a
 ##Mean
 realestate_mean <- round(mean(realestate$`Living Area [sq ft]`), digits = 2)
 realestate_mean
@@ -114,6 +114,20 @@ samples <-
       na.omit(realestate$`Sample 1`)) 
 samples <- 
   samples %>% select("Sample 1", everything())
+
+##Computing 95% C.I.s for 19 samples
+samples_ci <- list()
+for (i in 1:20) {
+  samples_ci[[i]] <- MeanCI(unlist(samples[i]), conf.level = 0.95)
+  i + 1
+}
+samples_ci <- as.data.frame(t(samples_ci))
+
+##Renaming the columns of the new df
+for (i in 1:20) {
+  colnames(samples_ci)[i] <- paste("Sample", i)
+  i +1
+}
 
 #1.1.f
 ##No coding required
