@@ -1,6 +1,7 @@
 #Loading libraries
+library(LearningStats)
 
-#Data is the same as A1-Q1-P1
+#Data is the same as Q1 P1
 
 #1.2.a
 ##Hypothesis test
