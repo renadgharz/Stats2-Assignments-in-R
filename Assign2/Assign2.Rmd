@@ -1,0 +1,95 @@
+---
+title: "ADM 2304 - Assignment 2"
+author: "Renad Gharz"
+date: "16/05/2022"
+output: pdf_document
+---
+```{r, echo=FALSE}
+#Loading libraries
+library(readxl)
+
+#Loading data
+climate <- read_xlsx("./Assign2Data.xlsx", sheet = "Climate")
+```
+
+# 1. Climate Change
+>The	dataset	__Climate__ contains	information	on the	temperatures observed	in 1948	and	2018 for	a	 set	 of	197	 randomly	 sampled locations	 from	 the	National	Oceanic	and	Atmospheric	Administration’s	records.	In	the	dataset,	the	variable	“dx90_1948”	indicates	the	numbers	of	days	 in	 which	 the	 temperature	 exceeded	 90 °F	 in	 1948	 for	 each location.	 Similarly,	“dx90_2018”	indicates	the	number	of	days	in	which	the	temperature	exceeded	90	°F in	2018. We	would	like to	determine	whether	 the	dataset provides convincing	evidence	 that	 there	were	more	days	in	2018	with	temperature	exceeding	90	°F	than	in	1948. To	this	end,	answer the	following	questions:
+
+## 1.a
+> Are	the	observations of	the	number	of	days	in	which	the	temperature	 exceeded 90	°F	in	1948	and	2018	independent?	Is	there	a	relationship	between	these	two	datasets?	Briefly	explain	your	answer.
+
+
+
+## 1.b
+>Compute	the	difference	in	the	number	of	days	exceeding	90	°F	for	each	station	(number	of	 days	in	 2018	minus	number	 of	 days	in	 1948).	 Is	 the	 distribution	 of	 the	 differences reasonably	normal?	Justify	your	answer.
+
+
+
+## 1.c
+>Use	software	 to	 find	 the	mean	and	 the	standard	deviation	of	 the	differences, and	 then	manually	 test	 the	 hypothesis	 that	 there	 were	 more	 days	 in	 2018	 with	 temperature	exceeding	 90	 °F	 than	 in	 1948.	 Use	 a	 5%	 significance	 level	 and	 the	 p-value	 approach.	Confirm	your	results	using	statistical	software.
+
+
+
+## 1.d
+>Construct	manually	the	corresponding	one-sided	95%	confidence	interval	for	the	mean	difference	in	 the	number	of	days	exceeding	90	 °F	and confirm	your	calculations	using	statistical	software.	Does	the	confidence	interval	confirm	the	conclusion	obtained	from	the	hypothesis	test	in	part	c)?	Briefly	explain	your	answer.
+
+
+
+## 1.e
+>Are	 the	 required	 conditions	 for	 the	 hypothesis	 test	 and	 confidence	 interval	 above	satisfied?	Briefly	explain	your	answer.
+
+
+
+# 2. Fuel Economy
+>The	dataset	Fuel contains	information	on	fuel	economy,	in	miles	per	gallon, published	by	the	U.S. Department	of	Energy	for	a	random	sample	of	100	cars	manufactured	in	2022.
+
+## 2.a
+>Create	 a	 side-by-side	 boxplot	 to	 examine	 the	 distribution	 of	 city	 fuel	 efficiency	 by transmission	type (auto	or	manual).	Comment	on	the	normality	of	the	distributions and	on	any	differences you	observe between	them. Use	software	to	find	the	corresponding	mean	and	standard	deviation values.
+
+
+
+## 2.b
+>Carry	 out	 manually	 an	 appropriate	 parametric	 hypothesis	 test	 to	 determine	 whether	there	 exists	 a	 difference	 in mean	 city	 fuel	 efficiency	 between cars	 with	 manual	 and automatic	transmissions.	Assume	that	the	city	fuel	efficiencies	for	manual	and	automatic	cars	are	approximately	normally	distributed,	the	two	population	variances	are	unequal, and	 use	 a	 5%	 significance	 level.	 Use	 statistical	 software	 to	 obtain	 the	 corresponding degrees	of	freedom and	to	confirm	your	results.
+
+
+
+## 2.c
+> Confirm	 the	 conclusion	 obtained	 from	 the	 hypothesis	 test	 in	 part	 b)	 by	 manually	constructing	the	corresponding	95%	confidence	interval	for	the	mean	difference	in	city	fuel	 efficiency	between cars	with	manual	 and	 automatic	 transmissions.	Use	 statistical	software	to	check	your	results and	explain	your	answer.
+
+
+
+# 3. Daily Activity & Obesity
+>A	 research	team aims	 to	 compare	 the	 level	 of	 physical	 activity	 of	 lean	 and	 mildly	 obese people	who	don’t	exercise.	The	dataset	__Activity__ includes the	number	of	minutes	per	day that	the	subjects	of	this	study	spent	standing	or	walking	over	a	12-day	period.
+
+## 3.a
+>Are	the	samples	independent?	Assuming	that	all	the	required	conditions	are	met,	what	would	it	be	the	appropriate	parametric	test	for	this	study? Explain	your	answers.
+
+
+
+## 3.b
+> Create	histograms	and	boxplots to	examine	the	distribution	of	the	amount	time	per	day	spent	 standing	 or	 walking by	 type	 of	 subject.	 Comment	 on	 the	 suitability	 of	 using	 a	parametric	test	to	address	the	question	of	interest.	
+
+
+
+## 3.c
+>Regardless	of	you	answer	to	part	b),	specify	the	name	of	an	appropriate	non-parametric	test	for	this	study.	State	the	corresponding	hypotheses	in	terms	of	the	median	activity level	 per	 day for lean	 and	 mildly	 obese	 subjects and test	 for	 a difference	 at	 the	 5% significance	level.	Make	sure	you	follow	all	the	steps	for	hypothesis	testing	indicated	in	the	 Instructions section, show	 your	 computations,	 and	 confirm	 your	 results	 using	statistical	software.
+
+
+
+# 4. Management and Engineering Students
+>Assume	that,	at	the	University	of	Ottawa, Management	and	Engineering	graduate	students	must	take	a	similar	statistics	course	during	their	studies.	The	university	would	like to assess	the	 association	 between	 the	 placement of	 students in	 the	 Management	 and	 Engineering	faculties	and	their final	grade	in	the	course.	For	this	purpose,	the	university	has	categorized	students’ grades	in	the	past	five	years	into	six groups	of	90-100,	80-90,	70-80,	60-70,	50-60, and	less	than	50. The	table	below	summarizes	the	distribution	of	the	grades	by	faculty.	Please	note	that	the	values	in	the	table	correspond	to the	number	of	students	in	each	category.
+
+## 4.a
+>Are	 the	 required	 conditions	 for	 a	 chi-square	 test	 of	 homogeneity	 (independence)	satisfied?	Explain	your	answer.
+
+
+
+## 4.b
+>Create	a	 table	with	 the	corresponding	expected	counts	and	having	row	 totals,	column	totals,	 and	 grand	 total.	 Round	 each	 cell	 value	 to	 two	 decimal	 places. Show	 your	computation	of	the	expected	count	for	the	number	of	students	with	a	grade	between	90	and	100	in	Management.
+
+
+
+## 4.c
+> Perform	a	chi-square	test	to	assess	the	association	(or	independence)	between	 faculty	placement	and	final	grade	at	the	5%	level	of	significance.	Show	your	computation	of	the	contribution	to	the	chi-square	statistic	of	the	cell	associated	with	the	number	of	students	with	a	grade	between	90	and	100	in	Management.
+
+

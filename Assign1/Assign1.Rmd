@@ -9,10 +9,10 @@ output: pdf_document
 library(readxl)
 
 #Loading data
-realestate <- read_xlsx("./Assign1/Assign1Data.xlsx")
+realestate <- read_xlsx("./Assign1Data.xlsx")
 ```
 
-# Question 1 - Real Estate
+# 1. Real Estate
 >The	dataset	RealEstate contains	information	on	the	listing	of	1,047	real	estate properties	in a	certain	region.	
 
 ## 1.1.a
