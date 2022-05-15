@@ -25,7 +25,7 @@ climate_diff_sd <- round(
   sd(climate$diff),
   digits = 3)
 
-##Ploting histogram
+##Plotting histogram
 climate_histogram <- 
   hist(climate$diff,
        main = "Histogram of difference",
