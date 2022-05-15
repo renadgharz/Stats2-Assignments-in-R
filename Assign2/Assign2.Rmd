@@ -72,7 +72,7 @@ climate <- read_xlsx("./Assign2Data.xlsx", sheet = "Climate")
 
 
 ## 3.c
->Regardless	of	you	answer	to	part	b),	specify	the	name	of	an	appropriate	non-parametric	test	for	this	study.	State	the	corresponding	hypotheses	in	terms	of	the	median	activity level	 per	 day for lean	 and	 mildly	 obese	 subjects and test	 for	 a difference	 at	 the	 5% significance	level.	Make	sure	you	follow	all	the	steps	for	hypothesis	testing	indicated	in	the	 Instructions section, show	 your	 computations,	 and	 confirm	 your	 results	 using	statistical	software.
+>Regardless	of	you	answer	to	part	b),	specify	the	name	of	an	appropriate	non-parametric	test	for	this	study.	State	the	corresponding	hypotheses	in	terms	of	the	median	activity level	 per	 day for lean	 and	 mildly	 obese	 subjects and test	 for	 a difference	 at	 the	 5% significance	level.
 
 
 
