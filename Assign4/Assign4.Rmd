@@ -1,0 +1,109 @@
+title: "ADM 2304 - Assignment 4"
+author: "Renad Gharz"
+date: "16/05/2022"
+output: pdf_document
+---
+```{r, echo=FALSE}
+#Loading libraries
+library(readxl)
+
+#Loading data
+exec_sals <- read_xlsx("./Assign4Data.xlsx", sheet = "Executive Salaries")
+prof_wages <- read_xlsx("./Assign4Data.xlsx", sheet = "Professor Wages")
+```
+
+# 1. Compensation of Senior Executives
+>
+
+## 1.a
+>
+
+
+
+## 1.b
+>
+
+
+
+## 1.c
+>
+
+
+
+## 1.d
+>
+
+
+
+## 1.e
+>
+
+
+
+## 1.f
+>
+
+
+
+## 1.g
+>
+
+
+
+## 1.h
+>
+
+
+
+## 1.i
+>
+
+
+
+# 2. Wages of University Professors
+>
+
+## 2.a
+>
+
+
+
+## 2.b
+>
+
+
+
+## 2.c
+>
+
+
+
+## 2.d
+>
+
+
+
+## 2.e
+>
+
+
+
+## 2.f
+>
+
+
+
+## 2.g
+>
+
+
+
+## 2.h
+>
+
+
+
+## 2.i
+>
+
+
