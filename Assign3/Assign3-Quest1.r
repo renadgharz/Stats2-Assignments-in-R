@@ -1,6 +1,8 @@
 #Loading libraries
 library(readxl)
 library(RColorBrewer)
+library(DescTools)
+library(dplyr)
 
 #Loading data
 scores <- read_xlsx("./Assign3/Assign3Data.xlsx", sheet = "Midterm Scores")
@@ -37,10 +39,9 @@ scores_long <- gather(
   scores, Professors, Scores)
 
 ##1 way ANOVA
-scores_anova <- oneway.test(
+scores_anova <- aov(
   scores_long$Scores~scores_long$Professors, 
-  scores, 
-  var.equal = TRUE)
+  scores)
 
 ##Critical value
 scores_cv <- round(qf(
@@ -53,12 +54,25 @@ scores_cv <- round(qf(
 round(scores_anova$statistic,3) > scores_cv
 
 #1.f
-
-
+##Bonferroni pairwise CIs
+scores_bonf_ci <- PostHocTest(
+  scores_anova, 
+  method = "bonferroni", 
+  conf.level = 0.95)
 
 
 #1.g
+##Kruskal-Wallis test
+scores_kw_test <- kruskal.test(
+  scores_long$Scores~
+    scores_long$Professors, 
+  scores)
 
+##Critical value
+scores_kw_cv <- round(qchisq(
+  0.05,
+  scores_kw_test$parameter, 
+  lower.tail = FALSE), 3)
 
-
-
+##Validating the test
+scores_kw_test$statistic > scores_kw_cv
