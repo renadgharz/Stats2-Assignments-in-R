@@ -70,6 +70,15 @@ util_bonf_me <- round(
     sqrt(2480*(1/9+1/9)),2)
 
 #2.e
-##Broken, need fix
-test <- PostHocTest(util_bill_anova, method = "bonferroni", which = util_bill_anova$coefficients,conf.level = 0.95, digits = 4, ordered = TRUE)
+##Pairwise Bonf CI
+util_bonf_pairs <- as.list(PostHocTest(
+  util_bill_anova, 
+  method = "bonferroni",
+  conf.level = 0.95, 
+  digits = 4, 
+  ordered = TRUE))
 
+##Ottawa 2bd - London 2bd pairwise CI
+ott_2bd_lon_2bd <- as.vector(c(row.names(
+  util_bonf_pairs$`util_bill$Bedroom:util_bill$City`)[6],
+  util_bonf_pairs$`util_bill$Bedroom:util_bill$City`[6,]))
