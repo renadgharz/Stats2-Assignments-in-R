@@ -103,5 +103,9 @@ sals_adj_lm_coeff__ci <- confint(
 
 
 #1.i
-pred_data <- data.frame(ROG_adj = 20)
-exec_sals_mean_given_20 <- predict(sals_adj_lm, data.frame(ROG_adj = 20), interval = "confidence")
+##CI given ROG of 20
+exec_sals_mean_given_20 <- predict(
+  sals_adj_lm, 
+  data.frame(ROG_adj = 20), 
+  interval = "confidence")
+
