@@ -71,11 +71,51 @@ plot(
 abline(0,0)
 
 #2.f
+##Removing exper variable
+prof_wages$exper <- NULL
+##Complete model
+prof_wages_lm_whole <- 
+  lm(lwage~1, prof_wages)
+
+##Test statistic - Model
+prof_wages_lm_stat <- 
+  summary(prof_wages_lm_new)$fstatistic[1]
+
+##Critical value
+prof_wages_lm_crit <-
+  qf(0.05, 
+     summary(prof_wages_lm_new)$fstatistic[2], 
+     summary(prof_wages_lm_new)$fstatistic[3], 
+     lower.tail = FALSE)
+
+##Validating test
+prof_wages_lm_stat > prof_wages_lm_crit
+
+##Crit value for coefficients
 
 
+##Test statistic - educ
+prof_wages_lm_educ <- round(summary(
+  prof_wages_lm_new)$coefficients[2,3],3)
+
+##Crit value for coefficients
+prof_wages_lm_coeff_crit <- round(qt(
+  0.05/2,
+  summary(prof_wages_lm_new)$df[2], 
+  lower.tail = FALSE),3)
+
+##Validating test
+prof_wages_lm_educ > prof_wages_lm_coeff_crit
+
+##Test statistic - tenure
+prof_wages_lm_tenure <- round(summary(
+  prof_wages_lm_new)$coefficients[3,3],3)
+
+##Validating test
+prof_wages_lm_tenure > prof_wages_lm_coeff_crit
 
 #2.g
-
+##No coding required
 
 
 #2.h
