@@ -117,11 +117,24 @@ prof_wages_lm_tenure > prof_wages_lm_coeff_crit
 #2.g
 ##No coding required
 
-
 #2.h
+##SE fit
+prof_wages_lm_se_fit <- predict(
+  prof_wages_lm_new, 
+  data.frame(educ=13,
+             tenure=15), 
+  se.fit = TRUE)
 
+##Confidence interval
+prof_wages_lm_ci <- round(predict(
+  prof_wages_lm_new, 
+  data.frame(educ=13,
+             tenure=15), 
+  interval = "confidence"), 4)
 
-
-#2.i
-
-
+##Prediction interval
+prof_wages_lm_pi <- round(predict(
+  prof_wages_lm_new, 
+  data.frame(educ=13,
+             tenure=15), 
+  interval = "prediction"), 4)
