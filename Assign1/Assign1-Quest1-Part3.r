@@ -17,7 +17,7 @@ required_n_mean <- round_any(
 
 
 #1.3.b
-require_n_prop <- round_any(
+required_n_prop <- round_any(
   sample.size.prop(0.02, 
                    sample1_ideal_props,
                    level = 0.9)$n, 
