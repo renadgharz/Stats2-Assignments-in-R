@@ -9,32 +9,33 @@ realestate <- read_xlsx("./Assign1/Assign1Data.xlsx")
 
 #1.1.a
 ##Mean
-realestate_mean <- round(mean(realestate$`Living Area [sq ft]`), digits = 2)
+realestate_mean <- round(mean(
+  realestate$`Living Area [sq ft]`), 2)
 realestate_mean
 
 ##Standard deviation
-realestate_sd <- round(sd(realestate$`Living Area [sq ft]`), digits = 2)
+realestate_sd <- round(sd(
+  realestate$`Living Area [sq ft]`), 2)
 realestate_sd
 
 ##Boxplot
-realestate_boxplot <- boxplot(realestate$`Living Area [sq ft]`,
-                              main = "Boxplot of Living Area",
-                              ylab = "Living Area (in sq ft)",
-                              col = "light blue")
+boxplot(realestate$`Living Area [sq ft]`,
+        main = "Boxplot of Living Area",
+        ylab = "Living Area (in sq ft)",
+        col = "light blue")
 
 ##Histogram
-realestate_histogram <- hist(realestate$`Living Area [sq ft]`,
-                             main = "Histogram of Living Area",
-                             xlab = "Livigin Area (in sq ft)",
-                             xlim = c(0, 5000),
-                             prob = TRUE,
-                             col = "light blue")
+hist(realestate$`Living Area [sq ft]`,
+     main = "Histogram of Living Area",
+     xlab = "Livigin Area (in sq ft)",
+     xlim = c(0, 5000),
+     prob = TRUE,
+     col = "light blue")
 ##Adding normal curve to histogram
 curve(dnorm(x, 
             mean = realestate_mean, 
             sd = realestate_sd), 
       add = TRUE)
-
 
 #1.1.b
 ##Creating new column with coded data
@@ -43,7 +44,6 @@ realestate['Coded Data'] <-
            realestate$`Living Area [sq ft]` <= 2800, 1, 0)
 
 ##Proportions of coded data
-
 ##Ideal properties population proportion
 pop_ideal_props <- 
   round(

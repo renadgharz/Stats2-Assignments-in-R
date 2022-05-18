@@ -4,9 +4,12 @@ author: "Renad Gharz"
 date: "16/05/2022"
 output: pdf_document
 ---
-```{r, echo=FALSE}
+```{r, echo = FALSE, results='hide'}
 #Loading libraries
+library(dplyr, warn.conflicts = FALSE)
 library(readxl)
+library(DescTools)
+library(LearningStats)
 
 #Loading data
 realestate <- read_xlsx("./Assign1Data.xlsx")
@@ -18,32 +21,195 @@ realestate <- read_xlsx("./Assign1Data.xlsx")
 ## 1.1.a
 >Treating the data	 in	 column	 __Living	 Area [sq	 ft]__ as	 the	 population,	 use	software	 to	 find	 the population	 mean	 and	 the	 population	 standard	 deviation.	 Is	 the population	data	reasonably	normal? Examine	a	boxplot	and	a	histogram	of	the	data	in	column	 __Living	 Area	 [sq	 ft]__ to	 justify your	 answer.	 From	 here	 on,	 assume	 that	 the	population	standard	deviation	is	not	known.
 
+### Mean and Standard Deviation
+```{r}
+##Mean
+realestate_mean <- round(mean(
+  realestate$`Living Area [sq ft]`), 2)
+realestate_mean
 
+##Standard deviation
+realestate_sd <- round(sd(
+  realestate$`Living Area [sq ft]`), 2)
+realestate_sd
+
+```
+
+The population mean $\mu$ for __Living Area [sq ft]__ is __1,807.3 square feet__ and the population standard deviation $\sigma$ is __641.5 square feet__.
+
+### Checking Normality
+
+```{r}
+##Boxplot
+boxplot(realestate$`Living Area [sq ft]`,
+        main = "Boxplot of Living Area",
+        ylab = "Living Area (in sq ft)",
+        col = "light blue")
+
+##Histogram
+hist(realestate$`Living Area [sq ft]`,
+     main = "Histogram of Living Area",
+     xlab = "Livigin Area (in sq ft)",
+     xlim = c(0, 5000),
+     prob = TRUE,
+     col = "light blue")
+##Adding normal curve to histogram
+curve(dnorm(x, 
+            mean = realestate_mean, 
+            sd = realestate_sd), 
+      add = TRUE)
+```
+
+The population of __Living Area [sq ft]__ is skewed to the right however the skew is only moderate and not that severe thus the population can still be considered relatively normal. We can tell there is skew by looking at the median line in the boxplot that is shifted to the left and at the outlier points that are above the upper fence. However, by looking at the histogram we can also see that although the bars don’t perfectly align with the normal curve, they still look relatively normal thus the distribution is relatively normal.
 
 ## 1.1.b
 >Suppose	that	for	a	family	of	four,	the	ideal	property	size	is	between	2,400	and	2,800	square	feet.	Use	software	to	code	the	data	in	column	__Living	Area	[sq	ft]__	and	put	the	result	in	column	__Coded	Data__.	Code	living	areas	between	2,400	and	2,800	square	feet	as “1”	and	code	living	areas	outside	of	this	interval	as	“0”.	Now	calculate	the	population proportion	using	software	and	report	the	result.
 
+### Coded Data Column
+```{r}
+##Creating new column with coded data
+realestate['Coded Data'] <- 
+  ifelse(realestate$`Living Area [sq ft]` >= 2400 & 
+           realestate$`Living Area [sq ft]` <= 2800, 1, 0)
+head(as.data.frame(realestate))
+```
 
+### Population Proportions
+```{r}
+##Proportions of coded data
+##Ideal properties population proportion
+pop_ideal_props <- 
+  round(
+    length(which(realestate$`Coded Data` == 1)) / 
+      nrow(realestate), 
+    digits = 4)
+pop_ideal_props
+
+##Non ideal properties population proportion
+pop_non_ideal_props <- 
+  round(
+    length(which(realestate$`Coded Data` == 0)) / 
+      nrow(realestate), 
+    digits = 4)
+pop_non_ideal_props
+```
+
+In our population of 1,047 houses, there are 99 houses that meet the criteria for the ideal property size (between 2,400 and 2,800 square feet). Thus, the population proportion is __9.46% (0.0946)__.
 
 ## 1.1.c
 >The	data	in	column	__Sample	1__ is a	simple	random	sample	drawn	from	the	data	in	 column	 __Living	 Area [sq	 ft]__.	 Calculate	 manually	 a	 95%	 confidence	 interval	 for	 the population	mean	based	on	this	sample	and	confirm	your	calculations	using	software.
 
+```{r}
+##Computing the 95% C.I. of Sample 1
+sample1_mean_ci <- 
+  MeanCI(realestate$`Sample 1`, 
+         conf.level = 0.95, 
+         na.rm = TRUE)
+sample1_mean_ci
+```
 
+We are 95% certain that the population mean will fall between __1,803 and 2,221 square feet__, 19 times out of 20.
 
 ## 1.1.d
 >Code	the	data	in	column	__Sample	1__ using	the	same	instructions	as	in part	b) above	 and	 put	 the result in	 column	 __Sample_p__.	 Calculate	 manually	 a	 90%	 confidence	interval	for	the	population proportion	of	properties	with living	areas	between	2,400	and	2,800	square	feet	and	confirm	your calculations	using software.	Assume	that	the	required	conditions	are	met, and	you	can	use the	normal	approximation.
 
+### Coded Data for Sample 1
+```{r}
+## Creating new column for Sample 1 coded data
+realestate['Sample_p'] <- 
+  ifelse(realestate$`Sample 1` >= 2400 & 
+           realestate$`Sample 1` <= 2800, 1, 0)
+head(as.data.frame(realestate))
+```
 
+### Sample Proportions
+```{r}
+##Ideal properties sample proportion (s1)
+sample1_ideal_props <- 
+  round(
+    length(which(realestate$`Sample_p` == 1)) / 
+      length(na.omit(realestate$Sample_p)), 
+    digits = 4)
+sample1_ideal_props
+
+##Non ideal properties sample proportion (s1)
+sample1_non_ideal_props <- 
+  round(
+    length(which(realestate$`Sample_p` == 0)) / 
+      length(na.omit(realestate$Sample_p)), 
+    digits = 4)
+sample1_non_ideal_props
+```
+
+In our sample of 40 houses, there are 4 houses that meet the criteria for the ideal property size (between 2,400 and 2,800 square feet). Thus, the sample proportion is __10% (0.1)__.
+
+### Confidence Interval
+```{r}
+##90% C.I. for Sample 1 (proportion)
+sample1_prop_ci <- 
+  round(
+    proportion.CI(
+      sample1_ideal_props, 
+      length(na.omit(realestate$`Sample_p`)), 
+      conf.level = 0.90)$CI, 
+    digits = 4)
+sample1_prop_ci
+```
+
+We are 90% confident that __2.2% to 17.8%__ of all houses in a certain region have living areas between 2,400 and 2,800 square feet.
 
 ## 1.1.e
 >Now	use	software	to	randomly	draw	19	additional	samples	of	size	n	=	40	from	column	__Living	 Area	 [sq	 ft]__.	 The	 procedure	must	 be	 repeated	 19	 times.	 Put	 these	 19	samples	in	columns	__Sample	2,	Sample	3,	…,	Sample	19,	Sample	20__.	For	each	of	these	additional	 samples,	 use	 software	 to	 calculate the	 95%	 confidence	 interval	 for	 the	population	mean.
 
+### Creating Samples
+```{r}
+##Creating the 19 random samples
+samples <- 
+  as.data.frame(
+    replicate(19,sample(
+      realestate$`Living Area [sq ft]`,40)))
+head(as.data.frame(samples))
 
+#Renaming the 19 random samples
+for (i in 2:20) {
+  colnames(samples)[i-1] <- paste("Sample", i)
+  i<- i +1
+}
+head(as.data.frame(samples))
+
+##Adding Sample 1 to df and shifting position
+samples <- 
+  cbind(
+    samples, "Sample 1" = 
+      na.omit(realestate$`Sample 1`)) 
+samples <- 
+  samples %>% select("Sample 1", everything())
+head(as.data.frame(samples))
+```
+
+### Calculating Confidence Intervals
+```{r}
+##Computing 95% C.I.s for 19 samples
+samples_ci <- list()
+for (i in 1:20) {
+  samples_ci[[i]] <- MeanCI(unlist(samples[i]), conf.level = 0.95)
+  i + 1
+}
+samples_ci <- as.data.frame(t(samples_ci))
+##Renaming the columns of the new df
+for (i in 1:20) {
+  colnames(samples_ci)[i] <- paste("Sample", i)
+  i +1
+}
+as.list(samples_ci)
+```
 
 ## 1.1.f
 >Now	 count	 the	 number	 of	 confidence	 intervals,	 obtained	 from	 all	 the	 20 samples,	that	contain	the	true	value	of	the	population	mean	from	part	a).	Is	this	what	you	might	expect?	Explain your	answer.
 
+Of the confidence intervals computed, 19 of them contain the true value of the population while only Sample 3 does not contain it. 
 
+This result is not surprising and is expected because we are building 95% confidence intervals around the population mean from a). With 95% C.I.s we are saying that we are 95% confident that the population mean will be included within our sample, 19 times out of 20. Thus, the fact that there is one sample among the 20 samples that does not contain the population mean is expected.
 
 ## 1.2.a
 >Using	the	 data	in	 column	__Sample 1__,	manually	 test	 the	 hypothesis	 that	 the	population	mean	is	not	equal	to	2,000	square feet. Use	a	5%	significance	level and	the	critical	 value	 approach. Confirm	your	results	using software. Is your	conclusion	supported	by	the	confidence	interval from part	c)?	Explain	your	answer.
