@@ -10,8 +10,7 @@ activity <- read_excel('./Assign2/Assign2Data.xlsx', sheet = 'Activity')
 
 #3.b
 ##Plotting histogram (lean)
-activity_histogram <- 
-  hist(activity$`Lean Subject`,
+hist(activity$`Lean Subject`,
        main = "Histogram of Lean Subject",
        xlab = "Minutes standing or walking",
        xlim = c(0, 1000),

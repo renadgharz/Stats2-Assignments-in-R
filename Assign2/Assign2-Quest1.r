@@ -59,7 +59,6 @@ a2_q1_c_ci <- round(MeanCI(
   sides = "left"),
   digits = 3)
 
-
 #1.e
 #No coding required
 

@@ -7,7 +7,7 @@ fuel <- read_excel('./Assign2/Assign2Data.xlsx', sheet = 'Fuel')
 
 #2.a
 ##SBS boxplots
-fuel_sbs_boxplots <- boxplot(
+boxplot(
   fuel$`City Fuel Efficiency` ~ 
     fuel$`Transmission (Auto, Manual)`,
   main = "Boxplot of City Fuel Efficiency",
