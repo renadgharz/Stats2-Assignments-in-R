@@ -4,19 +4,19 @@ author: "Renad Gharz"
 date: "16/05/2022"
 output: pdf_document
 ---
-```{r, echo=FALSE}
+```{r, echo=FALSE, results='hide'}
 #Loading libraries
 library(readxl)
 library(RColorBrewer)
 library(DescTools)
-library(car)
+library(car, warn.conflicts = FALSE)
 
 #Loading data
 exec_sals <- read_xlsx("./Assign4Data.xlsx", sheet = "Executives Salaries")
-##Removing empty column
 exec_sals$...4 <- NULL
 
 prof_wages <- read_xlsx("./Assign4Data.xlsx", sheet = "Professor Wages")
+prof_wages$obs <- NULL
 ```
 
 # 1. Compensation of Senior Executives
@@ -210,39 +210,260 @@ Consider	a	5%	significance	level where	needed.
 ## 2.a
 >Using	a	graphical	display,	explain	why	a	log	base	10	transformation	of	*wage* is	necessary	before	fitting	a	linear	regression model.
 
+```{r}
+##Scatterplot matrix
+plot(prof_wages, 
+     cex = 2, 
+     pch =2, 
+     col = "dark blue",
+     main = "Scatterplot matrix (wage)")
+```
 
+The true relationship of the X and Y variables in the data is not always linear. In case that true relationship between the response and predictors is non-linear then a log base 10 transformation will help linearize the data which would then allow us to perform a linear regression on the data. If we keep the data as it is, we won’t be able to do a proper linear regression analysis since the results would be inaccurate. In this case, the relationships of the Xs and the Y appear to be linear for (*exper*, *wage*) and (*tenure*, *wage*) but non-linear for (*educ*, *wage*). A log base 10 transformation would help improve the first 2 pairs’ linear relationship and make the third pair linearly related in order to perform a linear regression analysis.
 
 ## 2.b
 >Create	a	new	variable	called *lwage* as	the log	base	10	transformation of	the	variable	*wage*.	Using	scatter	plots,	examine	the	pairwise	relationship	between	the	variables *lwage*,	*educ*,	*exper* and	*tenure*.	Comment	on	your	results.
 
+```{r}
+##Transforming data
+prof_wages$lwage <- log(prof_wages$wage,10)
+##Removing wage column
+prof_wages$wage <- NULL
+##Scatterplot matrix
+plot(prof_wages, 
+     cex = 2, 
+     pch =2, 
+     col = "dark blue",
+     main = "Scatterplot matrix (lwage)")
+##Correlation matrix
+prof_wages_corr_mat <- 
+  round(cor(prof_wages),4)
+prof_wages_corr_mat
+```
+
+We can look at the scattering of the data as well as the red regression lines on the scatterplots. If the regression line is moving upwards then it’s a positive relationship; if it’s pointing downwards, then it’s a negative relationship. We can also roughly assess the strength of the relationships by looking at the angle of the regression lines; the flatter the line is the weaker the relationship, the more diagonal (angled) the line is, the stronger the relationship between the two variables is. Finally, the correlation coefficient of those lines can also give us information about the strength and direction of the variables’ relationships.
+
+The *educ* predictor variable does not have a linear relationship with any of the other 3 variables. There are also no extremely strong relationships that stand out but there are 2 scatterplots whose variables have moderate relationship (*exper*, *tenure*) and (*tenure*, *exper*). Just under half of the relationships are rather negative (5 to be exact) while the remaining 6 relationships are positive. One third of the relationships have very weak relationships (4 to be exact), half of them have weak relations (6 out of 12), and only two have moderate relationships (as mentioned previously).
 
 
 ## 2.c
 >Perform	a	multiple	linear	regression	analysis	with	*lwage* as	 the	response	variable	and	*educ*,	*exper* and *tenure* as	predictors. Report	your results.	Explain	why	you	might	consider	dropping	variable	*exper*. Also,	do	you	observe	any	sign	of	multicollinearity?	Explain.	
 
+```{r}
+##Regression model
+prof_wages_lm <- 
+  lm(lwage~educ+exper+tenure, prof_wages)
+summary.lm(prof_wages_lm)
+
+##Regression coefficients
+prof_wage_lm_coeffs <- 
+  summary(prof_wages_lm)$coefficients[,1]
+prof_wage_lm_coeffs
+```
+
+The regression equation is:
+$$
+lwage = 1.0501 + 0.01361(educ) + 0.000509(exper) + 0.003499(tenure) + \varepsilon_i
+$$
+
+From the regression equation, we find that professors who have 0 years of training and education, 0 years of teaching and doing university-level research, and 0 years in tenure are expected on average to earn a log wage of 1.0501 (\$112,228). However, this doesn’t tell us much because it’s unlikely for a professor to have 0 years of training and education, teaching and research, and tenure.
+
+For the slope coefficient of educ; with all else held constant (meaning the other predictors don’t fluctuate), for each year of training and education, we would expect the log of the professors’ salaries to increase on average by 0.01361 (\$10,318). For the slope coefficient of exper; with all else held constant, for each year of teaching and doing research at university level, we would expect the log of the professors’ salaries to increase on average by 0.000509 (\$10,012). For the slope coefficient of tenure; with all else held constant, for each year in tenure, we would expect the log of the professors’ salaries to increase on average by 0.003499 (\$10,081).
+
+We can also gauge the strength and predictive power of the model from the Minitab output. *S* represents the standard deviation of the residuals $\varepsilon_i$ and it tells us how far the datapoints of the model are spread out (distanced) from the regression line. A smaller *S* value means that the model is better fitted which gives it better predictive power over a model with a larger *S*. In this case, *S* has a value of 0.0652306 meaning that the datapoints are spread around the regression line within that range. $R^2$  represents the percentage of the variance in the response variable that can be explained by the predictor variables (the model). The higher the better because it would mean our model accounts for more of the response variable’s variance thus making our model better fitted with more predictive power. In this case, $R^2$ is 31.85% which means that 68.15% of the variance cannot be accounted for by the model. This isn’t necessarily bad depending on the context of the regression analysis.
+
+When performing a multiple regression analysis, sometimes certain predictor variables will not be contributing much to the predictive power to the model (i.e., they have very small coefficients). When these non-contributing predictor variables are kept in the model, there’s a chance it may reduce the accuracy of the model’s predictions. Thus, by removing these variables, the prediction power of the model is likely to increase (which is good) making it more parsimonious. In this case, we can see that the *exper* prediction variable does not contribute much to the model’s overall output (weak coefficient compared to the other two predictors). For that reason, we could consider dropping it from the model to improve the model’s strength.
+
+There are no signs of multicollinearity in this model because the variance inflation factors (VIFs) of the model are not greater than 10, which means that none of the predictors in our model are highly correlated. As shown in the output below:
+
+```{r}
+##Calculating model VIF
+prof_wages_lm_vif <- 
+  round(vif(prof_wages_lm),3)
+prof_wages_lm_vif
+```
 
 
 ## 2.d
 >Repeat	part	c)	but	now with	*lwage* as	the	response	variable	and only	two independent variables, *educ* and	*tenure*. Report	your results.
 
+```{r}
+##New regression model
+prof_wages_lm_new <- 
+  lm(lwage~educ+tenure, prof_wages)
+summary.lm(prof_wages_lm_new)
 
+##Regression coefficients
+prof_wages_lm_new_coeffs <- 
+  summary(prof_wages_lm_new)$coefficients[,1]
+prof_wages_lm_new_coeffs
+```
+
+The new regression equation is:
+$$
+lwage = 1.0641 + 0.01299(educ) + 0.003969(tenure) + \varepsilon_i
+$$
+
+The main changes that we can notice by removing the exper predictor variable is the change in the remaining 2 slope coefficients and intercept coefficient. The *educ* coefficient decreased from 0.01361 (\$10,318) to 0.01299 (\$10,304) while the *tenure* coefficient increased from 0.003499(\$10,081) to 0.003969 (\$10,092). The intercept coefficient increased from 1.0501 (\$112,228)to 1.0641 (\$115,904). The model’s strength does not seem to have increased by much as the *S* and $R^2$ values remain relatively the same as the original model, 0.0654023 vs 0.0652306, and 31.35% vs 31.85%, respectively. Although the $R^2$ value decreased by 0.5% in the new model, the change is extremely small and is thus unlikely to have any significant impact on the model.
+
+With the new model, for the slope of *educ*; all else held constant, we expect on average for the log of professors’ salaries to increase by 0.01299 (\$10,304) for every year of training and education they have compared to the previous 0.01361 (\$10,318). For the slope of *tenure*; all else held constant, we expect on average for the log of professors’ salaries to increase by 0.003969 (\$10,092) for every year in tenure compared to the previous 0.003499 (\$10,081). The new intercept coefficient 1.0641 also tells us that professors with 0 years of training and education, and 0 years in tenure can expect on average to earn \$115,904.
 
 ## 2.e
 >Create	 the	 residual	 against	 fitted	 values plot and	 the	 normal	 probability	 plot	 of	 the	residuals	 corresponding	 to	 the	 model	 in	 part	 d).	 Do	 the	 equal	 variance	 and	 near	normality	conditions appear	to	be	satisfied? Explain
 
+```{r}
+##Q-Q plot
+qqnorm(prof_wages_lm_new$residuals, 
+       datax = TRUE)
+qqline(prof_wages_lm_new$residuals, 
+       datax = TRUE)
 
+##Residuals vs fitted values
+plot(
+  fitted(prof_wages_lm_new), 
+  resid(prof_wages_lm_new),
+  main = "Residuals vs Fitted Values",
+  xlab = "Fitted Values",
+  ylab = "Residuals")
+##Adding mean line
+abline(0,0)
+```
+
+From the normal probability plot of residuals, we can see that although the datapoints’ alignment with the normal diagonal line is not perfect, it’s still relatively aligned to the extent that we can say that the near normality condition is satisfied. We can also visualize the near normality condition in the residuals fit plot; on it, we can see that the datapoints are rather symmetrically spread around 0 vertically (the mean), even though there are some noticeable outliers, they’re very few and don’t significantly impact the near normality condition, thus it’s still satisfied. 
+
+As for the equal variance condition, it does not appear to be satisfied. By looking at the residuals fit plot, we can see that the datapoints are not equally distributed across the fitted values (horizontal/x-axis). The data start off vary sparse (outliers) and around the middle-fitted values, the data are densely clustered together, and then become less grouped on the far right side of the fitted values. Thus, the equal variance condition is not satisfied because the data are not equally distributed on the residuals versus fitted values plot. 
 
 ## 2.f
 >Based	on	the	regression	report for	part	d),	test the	significance	of	the predictors *educ* and	*tenure* separately	 and	 the	 significance	 of	the	model	 as	 a	 whole. Are	 your	 conclusions	consistent?	Explain.
 
+### Model Hypothesis Test
 
+$$
+\begin{cases}
+  H_0: \beta_{educ} = \beta_{tenure} = 0 \\
+  H_A: \text{Not all } \beta's \text{ are zero}
+\end{cases}
+$$
+
+```{r}
+##Removing exper variable
+prof_wages$exper <- NULL
+##Complete model
+prof_wages_lm_whole <- 
+  lm(lwage~1, prof_wages)
+summary.lm(prof_wages_lm_whole)
+
+##Test statistic - Model
+prof_wages_lm_stat <- 
+  summary(prof_wages_lm_new)$fstatistic[1]
+prof_wages_lm_stat
+
+##Critical value
+prof_wages_lm_crit <-
+  qf(0.05, 
+     summary(prof_wages_lm_new)$fstatistic[2], 
+     summary(prof_wages_lm_new)$fstatistic[3], 
+     lower.tail = FALSE)
+prof_wages_lm_crit
+
+##Validating test
+prof_wages_lm_stat > prof_wages_lm_crit
+```
+
+Since $F_{stat} > F_{0.05;2,491} \to 112.13 > 3.014$, we reject the null hypothesis in favour of the alternative. There’s sufficient evidence that the model as a whole is significant, meaning that in this case, the model has some predictive power to be able to predict on average the wages of professors based on years of education and in tenure.
+
+### Coefficient Test - Education
+$$
+\begin{cases}
+  H_0: \beta_{educ} = 0, & \text{when all the other variables are included in the model} \\
+  H_A: \beta_{educ} \neq 0, & \text{when all the other variables are included in the model}
+\end{cases}
+$$
+
+
+```{r}
+##Test statistic - educ
+prof_wages_lm_educ <- round(summary(
+  prof_wages_lm_new)$coefficients[2,3],3)
+prof_wages_lm_educ
+
+##Crit value for coefficients
+prof_wages_lm_coeff_crit <- round(qt(
+  0.05/2,
+  summary(prof_wages_lm_new)$df[2], 
+  lower.tail = FALSE),3)
+prof_wages_lm_coeff_crit
+
+##Validating test
+prof_wages_lm_educ > prof_wages_lm_coeff_crit
+```
+
+Since $t_{stat} > t_{\alpha,n-k-1} \to 11.99 > 1.965$, we reject the null hypothesis in favour of the alternative. There is sufficient evidence that the education predictor adds significance to the model that has other predictors. All else being equal, professors are expected on average to earn a log wage of 0.01299 (\$10,304) for every year of training and education they have.
+
+### Coefficient Test - Education
+$$
+\begin{cases}
+  H_0: \beta_{tenure} = 0, & \text{when all the other variables are included in the model} \\
+  H_A: \beta_{tenure} \neq 0, & \text{when all the other variables are included in the model}
+\end{cases}
+$$
+
+```{r}
+##Test statistic - tenure
+prof_wages_lm_tenure <- round(summary(
+  prof_wages_lm_new)$coefficients[3,3],3)
+prof_wages_lm_tenure
+
+##Validating test
+prof_wages_lm_tenure > prof_wages_lm_coeff_crit
+```
+
+Since $t_{stat} > t_{\alpha, n-k-1} \to 9.85 >1.965$, we reject the null hypothesis in favour of the alternative. There is sufficient evidence that the tenure predictor adds significance to the model that has other predictors. All else being equal, professors are expected on average to earn a log wage of 0.003969 (\$10,092) for every year in tenure.
+
+### Comments
+
+The results of the 3 hypotheses tests are consistent with each other. If our model as a whole was not significant then the 2 coefficients of the model would not be significant individually, thus there would have been no need to run the latter two hypotheses’ tests in the first place. But because we found the model to be significant as whole, we ran the coefficients’ individual hypotheses test and found that they are also significant with all else being equal, which is consistent with first hypothesis test and confirms that the model as a whole is significant. For the business significance, this means that our predictors (education and tenure) are significant (are capable of) in predicting the wage of professors.
 
 ## 2.g
 >Based	on	the	results	for	the	model	in part	d),	what	is	the	estimated	impact	on	wages	of	an	additional	 year	 of	training	and	education? Express	 your	answer	in	 the	 right	 salary	units.
 
+$$
+log_{10}{(x)} = b \to x = 10^b \\
+10^b = 10^{0.01299} = 1.0303623952 \\
+1.0303623952 \cdot  10,000 = 10,303.62395197554 \approx 10,304
+$$
 
+An additional year of training and education is estimated to impact professors’ annual wages by \$10,304 CAD, all else being equal.
 
 ## 2.h
 > Obtain	the	standard	error	of	the	fit	(SE	fit)	using	statistical	software	and	then	manually	compute	 the	 prediction	 interval	 and	 the	 confidence	 interval	 for	 the	 mean	 wage	 of	professors with	13	years	of	training	and	education	and	15	years	in	tenure.	Express	your	answers	in	the	right	salary	units.	Why	is	the	prediction	interval	wider	than	the	confidence	interval? Explain.
 
+```{r}
+##SE fit
+prof_wages_lm_se_fit <- predict(
+  prof_wages_lm_new, 
+  data.frame(educ=13,
+             tenure=15), 
+  se.fit = TRUE)
+prof_wages_lm_se_fit
 
+##Confidence interval
+prof_wages_lm_ci <- round(predict(
+  prof_wages_lm_new, 
+  data.frame(educ=13,
+             tenure=15), 
+  interval = "confidence"), 4)
+prof_wages_lm_ci
+
+##Prediction interval
+prof_wages_lm_pi <- round(predict(
+  prof_wages_lm_new, 
+  data.frame(educ=13,
+             tenure=15), 
+  interval = "prediction"), 4)
+prof_wages_lm_pi
+```
+
+The confidence interval is based on the expected value of the annual wage of professors given 13 years of training and education, and 15 years in tenure so it only needs to factor in the uncertainty in estimating the mean wage because the mean is a fixed target and thus does not vary or fluctuate.
+
+On the other hand, the prediction interval is predicting the future wage of professors given 13 years of training and education, and 15 years in tenure so it needs to account for increased variability and the possibility of the response variable (annual wage) fluctuating in the future. The response variable would then be considered a moving target, thus the P.I. is wider because it needs to account for that future variability of the response variable changing (moving) from its mean value. Mathematically, this is represented by adding *MSE* to the SE of fit, as well squaring the latter, which is what contributes to the wider interval and accounts for the previously mentioned fluctuations of the response variable.
