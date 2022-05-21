@@ -1,3 +1,4 @@
+---
 title: "ADM 2304 - Assignment 4"
 author: "Renad Gharz"
 date: "16/05/2022"
@@ -6,104 +7,242 @@ output: pdf_document
 ```{r, echo=FALSE}
 #Loading libraries
 library(readxl)
+library(RColorBrewer)
+library(DescTools)
+library(car)
 
 #Loading data
-exec_sals <- read_xlsx("./Assign4Data.xlsx", sheet = "Executive Salaries")
+exec_sals <- read_xlsx("./Assign4Data.xlsx", sheet = "Executives Salaries")
+##Removing empty column
+exec_sals$...4 <- NULL
+
 prof_wages <- read_xlsx("./Assign4Data.xlsx", sheet = "Professor Wages")
 ```
 
 # 1. Compensation of Senior Executives
->
+>A	large	international	bank	is	reviewing	its	compensation	policy	for	their	senior	executives.	They	want	to	closely	examine	the	relationship	between	senior	executives’	salaries	and	the	growth	 in	 their	 business	 portfolio.	 The	 dataset	 __Executive	 Salaries__ contains	 last	 year’s annual	 compensation of	 the bank	 senior	 executives (in	 thousands	 of	 dollars), including	performance	pay, and	the	annual	rate	of	growth	of	their	respective	business	portfolio	(as	a	percentage). These	variables	are	called	*Salary_raw* and	*ROG_raw*,	respectively.	
 
 ## 1.a
->
+>Draw	a	boxplot	of	 the	salary	of	senior	executives	(variable	*Salary_raw*) and	produce	a	scatter	plot	of	 this	variable	against	 the	annual	rate	of	growth	 (variable *ROG_raw*).	Are	there	any	apparent	outliers	in	the	data?	Are	there	high	leverage	points?
 
+```{r}
+##Boxplot
+boxplot(
+  exec_sals$Salary_raw,
+  main = "Boxplot of Salaraies (Unadjusted)",
+  ylab = "Salaries (Unadjusted, in $)",
+  col = brewer.pal(1, "PRGn"))
 
+##Scatterplot
+plot(
+  exec_sals$ROG_raw, 
+  exec_sals$Salary_raw,
+  main = 
+    "Salaries vs Rate of Growth (Unadjusted)",
+  xlab = "Rate of Growth (Unadjusted, %)",
+  ylab = "Salaries (Unadjusted, $)")
+```
+
+Yes, there are several apparent outliers. We can spot them by looking at the boxplot which shows 2 groups of outliers. The first group consists of 3 extreme outliers (the 3 furthest points above the upper fence) very distance from the rest of the data (and even distanced between themselves). The second group consists of moderate outliers (around 6 or 7 points) grouped together slightly above the upper fence of the boxplot. These outliers can be seen on the scatterplot by looking at the data spread vertically; we can see the 3 extreme outliers at the spread out far away from where most of the data points are clustered together and we can see the moderate outliers slightly above where all the data point are clustered (between 500 and 1000 on y-axis).
+
+There are also a few high leverage points we can see on the scatterplot by looking at the data spread horizontally. These high leverage points are located on the far-right of the x-axis as we can see them stand out from the rest of the data points, the vast majority of which are grouped together on the far-left side of the plot. Although, a few high leverage points are present, these points do not appear to be influential points – at first glance – that would influence the slope of the regression should we redraw the scatterplot (with a regression line) and exclude these high leverage points. In other words, the regression line would not significantly change if we excluded these few high leverage points from our data.
 
 ## 1.b
->
+>Use	statistical	software	to	estimate	the	model	below and	report	your	results.
 
+$$
+y_i = \beta_0 + \beta_1 x_i + \varepsilon_i
+$$
 
+```{r}
+##Linear regression model
+sals_lm <- lm(
+  Salary_raw~
+    ROG_raw,
+  exec_sals)
+summary.lm(sals_lm)
+
+##Regression coefficients
+sals_lm_coeffs <- round(
+  sals_lm[["coefficients"]],3)
+sals_lm_coeffs
+```
+
+The linear regression model is:
+$$
+y_i = 192.638 + 3.7x_i + \varepsilon_i
+$$
+
+The results of the estimated model tell us that the intercept of the equation $(\beta_0)$ is 192.638. This means that executives whose business portfolios experience no growth (0% rate of growth) in a given year are expected on average to have an annual compensation of \$192,638 for that year. The results of the model also tell us that the slope of the equation $(\beta_1)$ is 3.7. This means that for every percentage increase in $x_i, y_i$ is expected to increase on average by that slope value (which is 3.7 in this case or \$3,700 in the business context). We can also evaluate the standard deviation of the residuals (*S*) which is given in the model summary output from Minitab as 273.311. The standard deviation of residuals is rather large which means that the datapoints are fairly spread away from the regression line indicating that the model may not be that well fitted to the data (i.e., the model is not that good and seems to have weak predictive power because the datapoints are located too distantly from the regression line).
 
 ## 1.c
->
+>Create	the	corresponding	residual	plot (residuals	against	predicted	values) and	normal	probability	plot	of	the	residuals. Looking	at	these	two	plots,	does	the	estimated	model	appear	satisfactory?
 
+```{r}
+##Residuals vs fitted values plot
+plot(
+  fitted(sals_lm), 
+  resid(sals_lm),
+  main = "Residuals vs Fitted Values",
+  xlab = "Fitted Values",
+  ylab = "Residuals")
+##Adding mean line
+abline(0,0)
 
+##Q-Q plot
+qqnorm(sals_lm$residuals, 
+       datax = TRUE) #Data
+qqline(sals_lm$residuals, 
+       datax = TRUE) #QQ line
+```
+
+No, the estimated model does not appear satisfactory because 2 out of the 3 conditions required for linear regression (nearly normal residuals, and constant variability) are not satisfied. By looking at the residuals fit graph, we can clearly see that the data points are not equally spread across the x-axis. The data points on the left seem to be heavily clustered (densely populated/grouped together) while the further right we go on the residuals fit plot, we can see that the spread of the data points is much scarcer than those on the left; the variance of the data is heteroscedastic. Thus, the constant variability condition fails to be satisfied.
+
+By looking at the normal probability plot of the residuals, we can clearly see that the residuals are extremely skewed as they do not line up at all with the red normal line. This is to be expected because we have found some outliers (unusual observations) in the scatterplot from part (a) that don’t follow the same trend as the rest of the data. As a result, the data cannot be considered normally distributed, and thus the nearly normal residuals condition fails to be satisfied.
+
+Because 2 of the 3 conditions required for a linear regression model fail to be satisfied, the model estimated in part (b) is not satisfactory. 
 
 ## 1.d
->
+>Use	statistical software	to	estimate	a	new	model,	this	time	by	using	the	adjusted	variables	*Salary_adj* and	*ROG_adj* which	exclude	all	the	data	points	for	which	the	salary	of	the	senior	executive appears	extraordinarily	large	considering	the	ROG	of	their	business	portfolio.	Report	your	results.
 
+```{r}
+##Linear regression model
+sals_adj_lm <- lm(
+  Salary_adj~
+    ROG_adj,
+  exec_sals)
+summary.lm(sals_adj_lm)
 
+##Regression coefficients
+sals_adj_lm_coeffs <- round(
+  sals_adj_lm[["coefficients"]],3)
+sals_adj_lm_coeffs
+```
+
+The new linear regression equation is:
+$$
+y_i = 160.878 + 3.112x_i + \varepsilon_i
+$$
+
+The newly calculated linear regression equation using the adjusted variables is quite different than the non-adjusted linear regression equation with both the intercept and the slope coefficients $(\beta_0 \text{ and } \beta_1)$ changing. The new intercept coefficient is 160.878 meaning that executives whose business portfolios experience no growth (0% rate of growth) in a given year are expected on average to have an annual compensation of \$160,878 for that year, instead of the previous \$192,638. The slope coefficient also changed to 3.112 meaning that for every point increase in $x_i,y_i$ is expected to increase on average by that slope value which is now 3.112 ($3,112)instead of the previous 3.7 ($3,700). Furthermore, the standard deviation of the residuals which was given in the output in the model summary is 88.0583, which is significantly less than the 273.311 of the non-adjusted data. Since the standard deviation of residuals helps measure the distance of the datapoints from the regression line in the model (lower is better because it means less variability), we can compare it to the previous model; it tells us that the new model’s datapoints are significantly less spread away from the regression line making it a better model than the original model because it is better fitted. As a result of that, the new model demonstrates much stronger predictive power than the first one.
 
 ## 1.e
->
+>Produce	a	histogram	and	a	normal	probability	plot	of	 the	residuals	of	your	regression	model	 in	 part	 d)	 above.	 Does	 this	 regression	 appear	 to	 meet the	 condition of	 near	normality?
 
+```{r}
+##Histogram of residuals
+hist(sals_adj_lm$residuals,
+     breaks = 15,
+     xlim = c(-200,250),
+     main = "Histogram of Residuals",
+     xlab = "Residuals")
 
+##Q-Q plot
+qqnorm(sals_adj_lm$residuals, 
+       datax = TRUE) #Data
+qqline(sals_adj_lm$residuals, 
+       datax = TRUE) #QQ line
+```
+
+Although there is still some skewness present in the normal probability plot of residuals, it is significantly less than the non-adjusted data. The skewness is now moderate so even though there is still skewness present, since it is moderate, then we can say that this adjusted regression model appears to the satisfy the condition of near normality.
+
+By looking at the histogram of residuals, we can see that the histogram bars are not perfectly symmetrically, thus also indicating that some skewness remains in the data, we can once again see that the skewness is moderate and that the bars of the histogram appear to be relatively symmetrical. Thus, we can also confirm this way that the adjusted regression model appears to satisfy the condition of near normality, just like the normal probability plot of residuals.
 
 ## 1.f
->
+>What	are	the	units	of	the	slope	coefficient	b1 in	this	last	regression	equation?	What	is	the	average	impact	on	the	salary	of	senior	executives whose	ROG	increases	by	1%	point?
 
-
+The units of measurement of the slope coefficient $(\beta_1)$ are in \$. For each 1% increase in the rate of growth $(x_i)$ of the senior bank executives’ business portfolios, we expect on average their annual compensation (salary) to increase by \$3,112.
 
 ## 1.g
->
+>Calculate	and	interpret	the	value	of	the	R^2 for	this	regression.
 
+```{r}
+sals_adj_rsq <-round(summary(
+  sals_adj_lm)$r.squared,4)
+sals_adj_rsq
+```
 
+The correlation of determination $R^2$ helps analyze the strength of the fit of a linear model. Its value represents the percentage of the response variable’s variation that is explained by the model (the predictor variable), thus the higher the value the better. 
+
+The value obtained from the calculation and the Minitab output shows that only 8.39% of the variation in the response variables can be explained by the predictor variable (the model), which means the model cannot account for the remaining 91.61% of the variation. This result is significantly better than the  $R^2$ that was computed with the original data (1.32%) because it means the model accounts for far more variation than the original model.
 
 ## 1.h
->
+>Calculate	a	95%	confidence	interval	for	the	regression	slope in	part	f).
 
+```{r}
+sals_adj_lm_ci_cv <- round(qt(
+  0.05/2,
+  sals_adj_lm$df.residual,
+  lower.tail = FALSE),3)
 
+##Coefficient CI
+sals_adj_lm_coeff__ci <- confint(
+  sals_adj_lm,level = 0.95)[2,]
+sals_adj_lm_coeff__ci
+```
+
+The 95% confidence interval for the regression slope $\beta_1$ is (1.671, 4.554). If we reran this model several times with different samples, we expect 95% of those samples’ individual confidence intervals to contain the true slope of the model.
 
 ## 1.i
->
+>Use	 your	 results	 to	 calculate	 a	 95%	 interval	 to	 estimate	 the	 mean	 salary	 of	 senior	executives	with	an	ROG	of	20	per	cent.
 
+```{r}
+##CI given ROG of 20
+exec_sals_mean_given_20 <- predict(
+  sals_adj_lm, 
+  data.frame(ROG_adj = 20), 
+  interval = "confidence")
+exec_sals_mean_given_20
+```
 
+The 95% confidence interval for the mean salary of senior executives with an ROG of 20% is (210.176, 236.078). This means that we are 95% certain that the population mean salary of senior executives with an ROG of 20% will fall between \$210,176 and \$236,078; 19 times out of 20.
 
 # 2. Wages of University Professors
->
+>Your	task	will	be	to	determine a	regression	model	for estimating	the	impact	of	education,	experience,	and	tenure	on	wages	of	university	professors	in	Canada.	The	dataset	__Professor	Wages__ provides	information	on	494	professors.	It includes	the	following	variables:
+
+* *wage*: annual salary in CAD \$10,000
+* *educ*: number of years of training and education
+* *exper*: number of years teaching and doing research at university level
+* *tenure*: number of years in tenure
+
+Consider	a	5%	significance	level where	needed.
 
 ## 2.a
->
+>Using	a	graphical	display,	explain	why	a	log	base	10	transformation	of	*wage* is	necessary	before	fitting	a	linear	regression model.
 
 
 
 ## 2.b
->
+>Create	a	new	variable	called *lwage* as	the log	base	10	transformation of	the	variable	*wage*.	Using	scatter	plots,	examine	the	pairwise	relationship	between	the	variables *lwage*,	*educ*,	*exper* and	*tenure*.	Comment	on	your	results.
 
 
 
 ## 2.c
->
+>Perform	a	multiple	linear	regression	analysis	with	*lwage* as	 the	response	variable	and	*educ*,	*exper* and *tenure* as	predictors. Report	your results.	Explain	why	you	might	consider	dropping	variable	*exper*. Also,	do	you	observe	any	sign	of	multicollinearity?	Explain.	
 
 
 
 ## 2.d
->
+>Repeat	part	c)	but	now with	*lwage* as	the	response	variable	and only	two independent variables, *educ* and	*tenure*. Report	your results.
 
 
 
 ## 2.e
->
+>Create	 the	 residual	 against	 fitted	 values plot and	 the	 normal	 probability	 plot	 of	 the	residuals	 corresponding	 to	 the	 model	 in	 part	 d).	 Do	 the	 equal	 variance	 and	 near	normality	conditions appear	to	be	satisfied? Explain
 
 
 
 ## 2.f
->
+>Based	on	the	regression	report for	part	d),	test the	significance	of	the predictors *educ* and	*tenure* separately	 and	 the	 significance	 of	the	model	 as	 a	 whole. Are	 your	 conclusions	consistent?	Explain.
 
 
 
 ## 2.g
->
+>Based	on	the	results	for	the	model	in part	d),	what	is	the	estimated	impact	on	wages	of	an	additional	 year	 of	training	and	education? Express	 your	answer	in	 the	 right	 salary	units.
 
 
 
 ## 2.h
->
-
-
-
-## 2.i
->
+> Obtain	the	standard	error	of	the	fit	(SE	fit)	using	statistical	software	and	then	manually	compute	 the	 prediction	 interval	 and	 the	 confidence	 interval	 for	 the	 mean	 wage	 of	professors with	13	years	of	training	and	education	and	15	years	in	tenure.	Express	your	answers	in	the	right	salary	units.	Why	is	the	prediction	interval	wider	than	the	confidence	interval? Explain.
 
 
