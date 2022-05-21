@@ -1,6 +1,5 @@
 #Loading libraries
 library(readxl)
-library(gridExtra)
 library(RColorBrewer)
 library(DescTools)
 
@@ -23,7 +22,7 @@ abline(0,0)
 
 #2.b
 ##2 way ANOVA
-util_bill_anova <- aov(util_bill$`Utility Bill ($)`~util_bill$Bedroom*util_bill$City,data = util_bill,)
+util_bill_anova <- aov(util_bill$`Utility Bill ($)`~util_bill$Bedroom*util_bill$City,data = util_bill)
 
 #2.c
 ##Bedroom (x), City (y)

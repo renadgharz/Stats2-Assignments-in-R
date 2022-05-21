@@ -7,9 +7,13 @@ output: pdf_document
 ```{r, echo=FALSE}
 #Loading libraries
 library(readxl)
+library(RColorBrewer)
+library(DescTools)
+library(dplyr, warn.conflicts = FALSE)
+library(tidyr)
 
 #Loading data
-mt_scores <- read_xlsx("./Assign3Data.xlsx", sheet = "Midterm Scores")
+scores <- read_xlsx("./Assign3Data.xlsx", sheet = "Midterm Scores")
 util_bill <- read_xlsx("./Assign3Data.xlsx", sheet = "Utility Bills")
 ```
 
@@ -19,40 +23,165 @@ util_bill <- read_xlsx("./Assign3Data.xlsx", sheet = "Utility Bills")
 ## 1.a
 >Create a	side-by-side	boxplot	of	the	data	and	explain	whether the	similar	variance	and	the	nearly	normality	conditions	for conducting	an	ANOVA	seem	to	be	satisfied.
 
+### Boxplots
+```{r}
+##SBS Boxplots
+boxplot(scores,
+        main = "Scores by Professor",
+        ylab = "Scores",
+        col = brewer.pal(3,"Accent"))
+```
+The near normality condition for conducting an ANOVA seems to be satisfied. By looking at the side-by-side boxplot, we can see that the distributions for Dr. Who and Dr. Jones are fairly normal because of the equal length wicks on both sides of the boxes, although the Dr. Who boxplot has some very slight skewness (upper wick slightly shorter than lower wick) but it’s not very severe, so it does not affect the near normality assumption. As for the Professor X boxplot, it does have more skewness (upper wick significantly shorter than lower wick) than the other two boxplots but it’s only slight skewness, so it once again, does not affect the near normality condition.
 
+The equal variance condition also seems to be satisfied. The Jones and X boxplots’ box sizes seem to be roughly the same size, while the Who boxplot’s box seems slightly smaller than the other two, however the difference is fairly small/negligible so the equal variance condition should still be satisfied.
 
 ## 1.b
 >In	addition	to	a	side-by-side	boxplot,	what	other	graphs	can	you	use	to	check	whether	the	conditions	for	using	an	ANOVA	are	satisfied?	Note:	You	don’t	need	to	produce	the	graphs; only	explain	how	you	would	produce	them.
 
+To verify the equal variance condition, we can also graph a plot of residuals vs fitted values, which would first require us to first calculate the residual values $(\varepsilon_{ij}=X_{ij}-\mu_i)$ and then plot them against the fitted values $X_{ij}$ to look for patterns of the data points being unevenly spread. Furthermore, we can also use a boxplot of residuals to look for roughly same-sized box lengths to confirm the equal variance condition. We once again would need the residual values $(\varepsilon_{ij}=X_{ij}-\mu_i)$ and then just plot them as a boxplot to do the comparison.
 
+To verify the near-normality assumption, we can plot a normal probability of residuals plot to see whether they approximately align with the diagonal line of the plot. First, calculate the residual values $(\varepsilon_{ij})$ again using the same formulas as above and then just plot them as a normal probability plot. We can also use a histogram of residuals to see whether the histogram bars are relatively symmetric to confirm the near-normality assumption. We, again, first have to calculate the residual values $(\varepsilon_{ij})$  and then plot them as a histogram to check for relative symmetry.
 
 >__Answer	the	following	questions,	with	exception	of	part	g),	assuming	that	the	conditions	for	conducting	an	ANOVA	are	satisfied.__
 
 ## 1.c
 >Use	 software	 to	 calculate	 the	 sample	 variance	 for	 each	 instructor and	 then	 use	 it	 to	calculate	 the	 pooled	 variance	manually.	 Verify	 that	 your	 pooled	 variance	 value	is	 the	same	as	the	MSE	value	displayed	in	the	partial	ANOVA	table	in	part	d)	below.
 
+### Sample Variances
+```{r}
+##Sample variances
+scores_who_var <- 
+  round(var(scores$Who), 3) 
+scores_who_var # Prof Who
 
+scores_jones_var <- 
+  round(var(scores$Jones), 3) 
+scores_jones_var # Prof Jones
+
+scores_x_var <- 
+  round(var(scores$X), 3) 
+scores_x_var # Prof X
+```
+
+### Pooled Variance
+```{r}
+##Pooled variance
+scores_pvar <- round(mean(c(
+  scores_who_var,
+  scores_jones_var,
+  scores_x_var)), 2)
+scores_pvar
+```
 
 ## 1.d
 >Fill	 in	 manually	 the	 missing	 values	(1) to	(6) in	 the	 ANOVA	 table	 below.	 Show	 your computations	(maximum	of	2	decimal	places).	Check	your	results	using	software.
 
+```{r}
+##Converting to long format
+scores_long <- gather(
+  scores, Professors, Scores)
+head(as.data.frame(scores_long))
 
+##1 way ANOVA
+scores_anova <- aov(
+  scores_long$Scores~scores_long$Professors, 
+  scores)
+summary.aov(scores_anova)
+```
 
 ## 1.e
 > Use	 the	 one-way	 ANOVA	 table	 you	 produced	 in	 part	 d)	 to	 test whether there	 is	 a	significant	difference	in	the	true	mean midterm	score	among the	three	instructors.	Use	the	critical	value	approach	and	a	5%	confidence	level.
 
+### Defining Hypotheses
+$$
+\begin{cases}
+  H_0: \mu_{Who} = \mu_{Jones} = \mu_{X} \\
+  H_A: \text{At least one of the means is different}
+\end{cases}
+$$
 
+The null hypothesis $H_0$ states that the means of midterm scores in all three of the professors’ sections are the same. There is no variance in the means.
+
+The alternate hypothesis $H_A$ states that at least one of the means of the midterm scores among the three professors’ sections are different. There is variance in the means.
+
+### Validating Test
+```{r}
+##Critical value
+scores_cv <- round(qf(
+  0.05, 
+  2, 
+  150, 
+  lower.tail = FALSE), 3)
+scores_cv
+
+##Validating test
+summary.aov(scores_anova)[[1]][1,4] > scores_cv
+```
+
+Since $F_{stat} > F_{\alpha, I-1, N-I} \to 3.98 > 3.06$, we reject the null hypothesis in favour of the alternative. There’s sufficient evidence that the means of the midterm scores for the students taught by different professors are not all the same; there is at least one mean that is different from the others.
 
 ## 1.f
 > Use	 the	 Bonferroni	 method	 for	 multiple	 comparisons	 to	 determine	 which	 population	means	 differ	 (if	 any)	 at $\alpha=0.05$.	 Show	 your	 computations	 and	 clearly	 state	 your	conclusion	for	each	pairwise	comparison.
 
+```{r}
+##Bonferroni pairwise CIs
+scores_bonf_ci <- PostHocTest(
+  scores_anova, 
+  method = "bonferroni", 
+  conf.level = 0.95)
+scores_bonf_ci
+```
 
+In order to establish that the means are significantly different from one another, 0 must be excluded from the interval such as:
+
+$$
+0 \notin (\text{Lower bound, Upper bound})
+$$
+
+Two of the pairwise comparisons have relatively similar means. The Jones-Who and X-Who pairs have similar means, while the X-Jones pair have significantly different means.
 
 ## 1.g
 > Perform	a	Kruskal-Wallis	non-parametric	test	to	determine	whether	there	is	a	difference	in	the	midterm	scores across	the	three	instructors.	Use	a	5%	significance	level and	the	critical	value	approach. Is	 your	
 conclusion	consistent	with	your	results	in	part	e)	above?
 
+### Defining Hypotheses
+$$
+\begin{cases}
+  H_0: \theta_{Who} = \theta_{Jones} = \theta_{X} \\
+  H_A: \text{At least one of the medians is different}
+\end{cases}
+$$
 
+The null hypothesis $H_0$ states that the medians of midterm scores in all three of the professors’ sections are the same. There is no variance in the medians.
+
+The alternate hypothesis $H_A$ states that at least one of the medians of the midterm scores among the three professors’ sections are different. There is variance in the medians.
+
+### Hypothesis Test
+```{r}
+##Kruskal-Wallis test
+scores_kw_test <- kruskal.test(
+  scores_long$Scores~
+    scores_long$Professors, 
+  scores)
+scores_kw_test
+
+##Critical value
+scores_kw_cv <- round(qchisq(
+  0.05,
+  scores_kw_test$parameter, 
+  lower.tail = FALSE), 3)
+scores_kw_cv
+```
+
+### Validating Test
+```{r}
+##Validating the test
+scores_kw_test$statistic > scores_kw_cv
+```
+
+Since the test statistic $H_{stat}$ is greater than the critical value $\chi_{\alpha,I-1}^2$, $(H_{stat} > \chi_{0.05,2}^2 \to 7.84 > 5.991)$, we reject the null hypothesis in favour of the alternative. There is sufficient evidence to indicate that at least one of the medians for the midterm scores for the professors’ students is different.
+
+This result is consistence with what we obtained from the ANOVA test in part (e) because we also rejected the null hypothesis there (at least one of the means was different).
 
 # 2. Utility Bills
 >Supposed	 that,	 when	 comparing utility	 bills,	 a researcher	 was	 interested	 in	 determining	whether	residential	utility	bills	differed	among different	cities	in	Canada,	and	also	whether	they	 differed depending	 on	the	 number	 of	 bedrooms	 in	 a	 house.	As	 part	 of	 the	 study,	 a	random	sample	of	households	in	different	Canadian	cities	was	selected,	and	their	monthly	utility	 bills	 and	 number	 of	 bedrooms	were	 recorded.	 The	 data	is	 provided	in	 the	dataset __Utility	Bills__.
@@ -60,7 +189,30 @@ conclusion	consistent	with	your	results	in	part	e)	above?
 ## 2.a
 > Plot	the	residuals	against	the	fitted	values	corresponding	to	the	two-way	ANOVA	model	for	this	analysis.	What	two	key	model	assumptions	can	be	examined	with	this	plot	and	do	they	appear	to	be	warranted?
 
+```{r}
+##2 way ANOVA
+util_bill_anova <- aov(
+  util_bill$`Utility Bill ($)`~
+    util_bill$Bedroom*util_bill$City,
+  data = util_bill)
 
+##Calculating residuals 
+util_bill_res <- resid(util_bill_anova)
+##Plotting residuals
+plot(fitted(
+  util_bill_anova),util_bill_res,
+  main = "Residuals Versus Fitted",
+  xlab = "Fitted values",
+  ylab = "Residuals")
+##Adding mean line
+abline(0,0)
+```
+
+The two key model assumptions we can make using the residuals versus fitted values: __equal variance__ and __near normality__.
+
+The equal variance assumption in this dataset seems to be satisfied because the data looks reasonably scattered across the x-axis. There difference in the spreads depending on the fitted values is not that significant, thus this assumption seems to be satisfied.
+
+The data points in the residuals versus fitted values plot seem to reasonably symmetric around 0 (the mean line) (above and below the line) with no significant outliers thus we can conclude that the near-normality assumption is satisfied.
 
 ## 2.b
 >Test	the	following	hypothesis	at	the	1%	significance	level. Use	software	to	generate	the	corresponding two-way	ANOVA	table,	but	show	any	other	computations.
@@ -69,17 +221,121 @@ conclusion	consistent	with	your	results	in	part	e)	above?
 >* Significant	main	effect	of	the	number	of	bedrooms	factor	(if	warranted);
 >* Significant	main	effect	of	the	city	factor	(if	warranted).
 
+### Interaction Between Factors A and B
+
+$$
+\begin{cases}
+  H_0: \text{No interaction between factors A and B} \\
+  H_A: \text{Interaction between factors A and B}
+\end{cases}
+$$
+
+The null hypothesis $H_0$ states that there is no interaction effect between the number of bedrooms and city.
+
+The alternate hypothesis $H_A$ states that there is an interaction effect between the number of bedrooms and the city.
+
+```{r}
+##2 way ANOVA
+summary.aov(util_bill_anova)
+```
+
+Because the p-value is not smaller than the significance level $(p<\alpha \to 0.203 \nless 0.01)$, we fail to reject the null hypothesis. There is insufficient to evidence to conclude that there is an interaction between the number of bedrooms and city.
+
+### Main Effect - Factor A
+$$
+\begin{cases}
+  H_0: \alpha_i = 0 & \forall  i \\
+  H_A: \alpha_i \neq 0 & \text{ for some } i
+\end{cases}
+$$
+
+Because the p-value of the Bedroom factor is smaller than the significance level $((\approx 0.000 < 0.01))$, we reject the null hypothesis in favour of the alternative. There is sufficient evidence to conclude that there is an effect due to the number of bedrooms.
+
+### Mean Effect - Factor B
+$$
+\begin{cases}
+  H_0: \beta_j = 0 & \forall  i \\
+  H_A: \beta_j \neq 0 & \text{ for some } i
+\end{cases}
+$$
+
+Because the p-value of the City factor is smaller than the significance level $((\approx 0.000 < 0.01))$, we reject the null hypothesis in favour of the alternative. There is sufficient evidence to conclude that there is an effect due to the city.
+
 ## 2.c
 >Create	 the	 corresponding	interaction	 plot	and	explain	if	it	 shows	interaction	 between	number	of	bedrooms	and	city.	Is	this	consistent	with	your	results	for	part	b)	above?
 
+```{r}
+##Bedroom (x), City (y)
+interaction.plot(
+  util_bill$Bedroom, 
+ util_bill$City, 
+ util_bill$`Utility Bill ($)`,
+ main = "Interaction Plot of Bedroom and City Factors",
+ xlab = "Bedroom",
+ ylab = "City",
+ lwd = 5, 
+ col = brewer.pal(
+   4,
+   "Spectral"), 
+ fun = "mean",
+ trace.label = "City")
 
+##City (x), Bedroom (y)
+interaction.plot(
+  util_bill$City, 
+  util_bill$Bedroom, 
+  util_bill$`Utility Bill ($)`,
+  main = "Interaction Plot of City and Bedroom Factors",
+  xlab = "City",
+  ylab = "Bedroom",
+  lwd = 5,
+  col = brewer.pal(4,"PRGn"),
+  fun = "mean",
+  trace.label = "Bedrooms")
+```
+
+Although the bedroom effect plot seems to have some lines crossing each other, those interactions are not necessarily significant; thus, we can say that the interaction plot is consistent with the results obtained from the hypothesis test in part (b). There is no significant interaction between the number of bedrooms and the city factors.
 
 ## 2.d
 >Calculate	 the	 Bonferroni	 margin	 of	 error	 for	 the	 confidence	 intervals	 based	 on	 all	pairwise	differences	between	the	treatment	means.	Show	your	manual	calculations	and	use	an	overall	95%	confidence	level.
 
+```{r}
+##Number of pairwise comparisons
+adj_alpha <- round(
+  0.05 / (2*choose(12,2)),6)
 
+##T-value for Bonferroni CI
+bonf_ci_t_val <- qt(
+  adj_alpha,
+  util_bill_anova[["df.residual"]])
+
+##Bonferroni CI ME
+util_bonf_me <- round(
+  -bonf_ci_t_val * 
+    sqrt(2480*(1/9+1/9)),2)
+util_bonf_me
+```
 
 ## 2.e
 >Using	the	calculated	margin	of	error	from	part	d)	and	the	pairwise	confidence	interval	approach,	determine whether	there	is	sufficient	evidence	(at	the	5%	significance	level)	of	a	difference	in	mean monthly	utility	bills between	2-bedroom houses in	Ottawa	and	2-bedroom	houses	in	London
 
+```{r}
+
+##Pairwise Bonf CI
+util_bonf_pairs <- as.list(PostHocTest(
+  util_bill_anova, 
+  method = "bonferroni",
+  conf.level = 0.95, 
+  digits = 4, 
+  ordered = TRUE))
+head(util_bonf_pairs[3], 5)
+
+##Ottawa 2bd - London 2bd pairwise CI
+ott_2bd_lon_2bd <- as.vector(c(row.names(
+  util_bonf_pairs$`util_bill$Bedroom:util_bill$City`)[6],
+  util_bonf_pairs$`util_bill$Bedroom:util_bill$City`[6,]))
+ott_2bd_lon_2bd
+```
+
+Since 0 is not included within the interval, $0 \notin (12.0,175.4)$, there is sufficient evidence that there is a significant difference in the mean monthly utility bills paid between a 2-bedroom Ottawa household and a 2-bedroom London household.
 

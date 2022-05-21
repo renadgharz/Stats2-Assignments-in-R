@@ -3,14 +3,15 @@ library(readxl)
 library(RColorBrewer)
 library(DescTools)
 library(dplyr)
+library(tidyr)
 
 #Loading data
 scores <- read_xlsx("./Assign3/Assign3Data.xlsx", sheet = "Midterm Scores")
 
 #1.a
 ##SBS Boxplots
-scores_boxplots <- boxplot(scores,main = "Scores by Professor",ylab = "Scores",
-                           col = brewer.pal(3,"Accent"))
+boxplot(scores,main = "Scores by Professor",ylab = "Scores",
+                 col = brewer.pal(3,"Accent"))
 
 #1.b
 ##No coding required
@@ -31,9 +32,6 @@ scores_pvar <- round(mean(c(
   scores_x_var)), 2)
 
 #1.d
-##No coding required
-
-#1.e
 ##Converting to long format
 scores_long <- gather(
   scores, Professors, Scores)
@@ -43,11 +41,12 @@ scores_anova <- aov(
   scores_long$Scores~scores_long$Professors, 
   scores)
 
+#1.e
 ##Critical value
 scores_cv <- round(qf(
   0.05, 
-  scores_anova$parameter[1], 
-  scores_anova$parameter[2], 
+  2, 
+  150, 
   lower.tail = FALSE), 3)
 
 ##Validating test
